@@ -1,5 +1,8 @@
 const express = require('express'); // import
+const saudacao = require('./saudacaoMid');
 const app = express(); // construtor da aplicacao
+
+app.use(saudacao('Marcus'));
 
 /*
 	"use" ou "all" irao responder a qualquer metodo HTTP.
@@ -31,7 +34,7 @@ app.get('/opa', (req, res) => {
 /*
 	O formato de resposta anterior foi HTML
 	porem tambem pode ser utilizado um JSON.
-*/
+	
 app.get('/', (req, res) => {
 	res.json({
 		data: [
@@ -44,6 +47,27 @@ app.get('/', (req, res) => {
 		limit: 3,
 		status: 200
 	})
+});
+*/
+	
+/*
+	Middleware e um metodo que faz alguma coisa
+	antes das outras funcoes, e depois inicia o
+	fluxo de execucao normal.
+	Parar isso e utilzada a funcao "next", recebida
+	por parametro. caso exista mais de uma funcao
+	para o mesmo contexto, o "next" ira chamar a
+	proxima, respeitando a ordem em que elas foram
+	escritas no codigo.
+*/
+app.use('/', (req, res, next) => {
+	console.log('Antes');
+	next();
+});
+app.use('/', (req, res, next) => {
+	console.log('Depois');
+	res.send('1');
+	next();
 });
 
 app.listen(3000, () => {
