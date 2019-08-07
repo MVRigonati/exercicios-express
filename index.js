@@ -1,7 +1,28 @@
 const express = require('express'); // import
 const saudacao = require('./saudacaoMid');
+const bodyParser = require('body-parser'); // Para requisicoes POST
 const app = express(); // construtor da aplicacao
 
+// Importando modulos de outro arquivo
+const usuarioApi = require('./api/usuario');
+app.post('/usuario', usuarioApi.salvar);
+app.get('/usuario', usuarioApi.obter);
+
+// Importando com parametros
+require('./api/produto')(app, 'com param!');
+//const produtoApi = require('./api/produto'); produtoApi(app, 'com param!');
+
+/*
+	"bodyParser" ira adicionar um objecto chamado "body"
+	com as informacoes que forem enviadas atraves do
+	body da requisicao.
+	Caso seja JSON, a primeira callback ira transformar
+	a informacao para um objeto JSON, caso seja
+	texto a segunda requisicao ira realizar esse parse.
+*/
+app.use(bodyParser.text());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true })); // Utilizando URL encoded (para forms)
 app.use(saudacao('Marcus'));
 
 /*
@@ -49,7 +70,47 @@ app.get('/', (req, res) => {
 	})
 });
 */
+
+// Recebendo informacoes pelos parametros
+// (Ex.: localhost:3000/clientes/relatorio?completo=false&ano=2018)
+app.get('/clientes/relatorio', (req, res) => {
+	res.send(`Cliente relatorio: completo = ${req.query.completo}; ano = ${req.query.ano}`);
+});
+
+// Recebendo dados da URL
+// (Ex.: localhost:3000/clientes/103)
+app.get('/clientes/:id', (req, res) => {
+	res.send(`ID ${req.params.id} selecionado!`);
+});
+
+/*
+	Recebendo parametros de POST (sem body parser) atraves
+	do corpo da requisicao
+app.post('/corpo', (req, res) => {
 	
+	let corpo = '';
+	req.on('data', function(parte) {
+		// A informacao pode chegar em varios pacotes (stream de dados),
+		// enquanto houver informacoes chegando, essa funcao sera executada.
+		corpo += parte;
+	});
+	req.on('end', function() {
+		// Quando as informacoes acabarem,
+		// essa fucnao sera executada.
+		res.send(corpo);
+	});
+
+});
+*/
+
+/*
+	Recebendo parametros de POST (com body parser) atraves
+	do corpo da requisicao
+*/
+app.post('/corpo', (req, res) => {
+	res.send(JSON.stringify(req.body));
+});
+
 /*
 	Middleware e um metodo que faz alguma coisa
 	antes das outras funcoes, e depois inicia o
